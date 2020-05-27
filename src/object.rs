@@ -1,39 +1,7 @@
-use calamine::{Reader, Xlsx, open_workbook, DataType};
 use std::collections::HashMap;
 use serde_json::{Map, Value};
-use std::fs;
 
-fn main() {
-    let contents = read_file("../test_s.xlsx");
-    let data = parse_data(&contents);
-
-    fs::write("test.json", serde_json::to_string(&data.data).unwrap()).unwrap();
-}
-
-fn read_file(filename: &str) -> HashMap<Vec<String>, String> {
-    let mut excel: Xlsx<_> = open_workbook(filename).unwrap();
-    let mut contents = HashMap::new();
-    
-    if let Some(Ok(r)) = excel.worksheet_range("Dictionary") {
-        for row in r.rows() {
-            if let DataType::String(key) = &row[0] {
-                match &row[2] {
-                    DataType::String(val) => {
-                        let keys = key
-                            .split(".")
-                            .map(|v| v.to_string())
-                            .collect();
-                        contents.insert(keys, val.to_string());
-                    },
-                    _ => (),
-                }
-            }
-        }
-    }
-    contents
-}
-
-fn parse_data(contents: &HashMap<Vec<String>, String>) -> Object {
+pub fn parse_data(contents: &HashMap<Vec<String>, String>) -> Object {
     let mut data = Object::new();
     
     for (key, val) in contents {
@@ -57,6 +25,20 @@ impl Object {
 
     pub fn insert(&mut self, keys: &Vec<String>, val: &str) {
         insert_field(&mut self.data, keys, val);
+    }
+
+    pub fn from(contents: &HashMap<Vec<String>, String>) -> Object {
+        let mut data = Map::new();
+    
+        for (keys, val) in contents {
+            insert_field(&mut data, keys, val);
+        }
+
+        Object { data }
+    }
+
+    pub fn data(&self) -> &Map<String, Value> {
+        &self.data
     }
 }
 
