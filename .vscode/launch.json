@@ -7,34 +7,53 @@
     {
       "type": "lldb",
       "request": "launch",
-      "name": "Debug executable 'xlsx-json'",
+      "name": "Debug unit tests in library 'xlsx-json'",
       "cargo": {
         "args": [
-          "build",
-          "--bin=xlsx-json",
+          "test",
+          "--no-run",
+          "--lib",
           "--package=xlsx-json"
         ],
         "filter": {
           "name": "xlsx-json",
-          "kind": "bin"
+          "kind": "lib"
         }
       },
-      "args": [],
+      "args": ["-i", "../test.xlsx"],
       "cwd": "${workspaceFolder}"
     },
     {
       "type": "lldb",
       "request": "launch",
-      "name": "Debug unit tests in executable 'xlsx-json'",
+      "name": "Debug executable 'main'",
+      "cargo": {
+        "args": [
+          "build",
+          "--bin=main",
+          "--package=xlsx-json"
+        ],
+        "filter": {
+          "name": "main",
+          "kind": "bin"
+        }
+      },
+      "args": ["-i", "../test.xlsx"],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug unit tests in executable 'main'",
       "cargo": {
         "args": [
           "test",
           "--no-run",
-          "--bin=xlsx-json",
+          "--bin=main",
           "--package=xlsx-json"
         ],
         "filter": {
-          "name": "xlsx-json",
+          "name": "main",
           "kind": "bin"
         }
       },
