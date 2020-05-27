@@ -1,15 +1,6 @@
 use std::collections::HashMap;
 use serde_json::{Map, Value};
-
-pub fn parse_data(contents: &HashMap<Vec<String>, String>) -> Object {
-    let mut data = Object::new();
-    
-    for (key, val) in contents {
-        data.insert(key, val);
-    }
-
-    data
-}
+use std::error;
 
 #[derive(Debug)]
 pub struct Object {
@@ -23,18 +14,20 @@ impl Object {
         }
     }
 
-    pub fn insert(&mut self, keys: &Vec<String>, val: &str) {
-        insert_field(&mut self.data, keys, val);
+    pub fn insert(&mut self, keys: &Vec<String>, val: &str) -> Result<(), Box<dyn error::Error>> {
+        insert_field(&mut self.data, keys, val)?;
+    
+        Ok(())
     }
 
-    pub fn from(contents: &HashMap<Vec<String>, String>) -> Object {
+    pub fn from(contents: &HashMap<Vec<String>, String>) -> Result<Object, Box<dyn error::Error>> {
         let mut data = Map::new();
     
         for (keys, val) in contents {
-            insert_field(&mut data, keys, val);
+            insert_field(&mut data, keys, val)?;
         }
 
-        Object { data }
+        Ok(Object { data })
     }
 
     pub fn data(&self) -> &Map<String, Value> {
@@ -42,15 +35,15 @@ impl Object {
     }
 }
 
-fn insert_field(map: &mut Map<String, Value>, keys: &Vec<String>, val: &str) {
+fn insert_field(map: &mut Map<String, Value>, keys: &Vec<String>, val: &str) -> Result<(), Box<dyn error::Error>> {
     if keys.len() > 1 {
         match map.get_mut(keys.get(0).unwrap()) {
             Some(Value::Object(map)) => {
-                insert_field(map, &keys[1..].to_vec(), val);
+                insert_field(map, &keys[1..].to_vec(), val)?;
             },
             _ => {
                 let mut child = Map::new();
-                insert_field(&mut child, &keys[1..].to_vec(), val);
+                insert_field(&mut child, &keys[1..].to_vec(), val)?;
 
                 let v = Value::Object(child);
                 map.insert(keys.get(0).unwrap().to_string(), v);
@@ -59,4 +52,6 @@ fn insert_field(map: &mut Map<String, Value>, keys: &Vec<String>, val: &str) {
     } else {
         map.insert(keys.get(0).unwrap().to_string(), Value::String(val.to_string()));
     }
+
+    Ok(())
 }

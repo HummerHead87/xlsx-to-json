@@ -15,10 +15,10 @@ fn main() {
         &config.input,
         &config.sheet,
         config.column,
-    );
+    ).unwrap();
     println!("Read file \"{}\". Rows count: {}", config.input, contents.len());
 
-    let contents = Object::from(&contents);
+    let contents = Object::from(&contents).unwrap();
 
     fs::write(
         &config.output,

@@ -1,15 +1,18 @@
+use std::error::Error;
 use std::collections::HashMap;
 use std::io::BufReader;
 use std::fs::File;
 use calamine::{Reader, Xlsx, open_workbook, DataType};
 
-pub fn read_file(filename: &str, sheet: &str, column: usize) -> HashMap<Vec<String>, String> {
-    let mut excel: Xlsx<_> = open_workbook(filename).unwrap();
+type Contents = HashMap<Vec<String>, String>;
 
-    parse_data(&mut excel, sheet, column)
+pub fn read_file(filename: &str, sheet: &str, column: usize) -> Result<Contents, Box<dyn Error>> {
+    let mut excel: Xlsx<_> = open_workbook(filename)?;
+
+    Ok(parse_data(&mut excel, sheet, column))
 }
 
-fn parse_data(excel: &mut Xlsx<BufReader<File>>, sheet: &str, column: usize) -> HashMap<Vec<String>, String> {
+fn parse_data(excel: &mut Xlsx<BufReader<File>>, sheet: &str, column: usize) -> Contents {
     let mut contents = HashMap::new();
     
     if let Some(Ok(r)) = excel.worksheet_range(sheet) {
@@ -25,7 +28,7 @@ fn parse_data(excel: &mut Xlsx<BufReader<File>>, sheet: &str, column: usize) -> 
                             .split(".")
                             .map(|v| v.to_string())
                             .collect();
-                            
+
                         contents.insert(keys, val.to_string());
                     },
                     _ => (),
