@@ -3,16 +3,20 @@ use xlsx_json::xlsx;
 use xlsx_json::object::Object;
 use xlsx_json::helpers;
 use clap::{App, Arg};
+use std::time::SystemTime;
 
 fn main() {
     let matches = get_matches();
     let config = helpers::parse_config(matches);
+
+    let start = SystemTime::now();
 
     let contents = xlsx::read_file(
         &config.input,
         &config.sheet,
         config.column,
     );
+    println!("Read file \"{}\". Rows count: {}", config.input, contents.len());
 
     let contents = Object::from(&contents);
 
@@ -20,6 +24,10 @@ fn main() {
         &config.output,
         serde_json::to_string(contents.data()).unwrap()
     ).unwrap();
+
+    println!("Successfully saved data to {}", config.output);
+
+    println!("Time elapsed: {}ms", start.elapsed().unwrap().as_millis());
 }
 
 fn get_matches<'a>() -> clap::ArgMatches<'a> {
